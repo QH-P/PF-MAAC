@@ -274,25 +274,6 @@ class PF_MAAC:
             chosen_actions.append(action.item())
         return chosen_actions
 
-def save_raw_data(raw_file_path, key, raw_data, raw_data_obj1= None):
-    new_component = pd.DataFrame({
-        'Key': [key],
-        'RawData': [raw_data],
-        'RawDataObj1': [raw_data_obj1]
-    })
-    if os.path.exists(raw_file_path):
-        existing_data = pd.read_csv(raw_file_path)
-        if key in existing_data['Key'].values:
-            # Key exists, replace the row
-            existing_data = existing_data[existing_data['Key'] != key]  # Remove old row
-            existing_data = pd.concat([existing_data, new_component], ignore_index=True)  # Add new row
-        else:
-            existing_data = pd.concat([existing_data, new_component], ignore_index=True)
-        existing_data.to_csv(raw_file_path, index=False)
-
-    else:
-        new_component.to_csv(raw_file_path, mode='w', header=True, index=False)
-
 
 def add_component_to_csv(file_path, key, mean_values, variance_values, mean_objective1=None, variance_objective1=None):
     new_component = pd.DataFrame({
@@ -350,10 +331,6 @@ if __name__ == "__main__":
         return_list = simple_utils.train_importance_sampling(env, agents, num_episodes, replay_buffer, minimal_size, batch_size)
         return_list_set.append(copy.copy(return_list))
 
-    raw_file_path = '/Users/pqh/PycharmProjects/Prob-VDN-AC/Simple_Sim/Data/Raw/{}_T{}_Raw.csv'
-    raw_file_path = raw_file_path.format(env_name, time_budget)
-    save_raw_data(raw_file_path, Algorithm, return_list_set)
-
     return_list = [sum(col) / len(col) for col in zip(*return_list_set)]
     return_variance = [sum((xi - mu) ** 2 for xi in col) / len(col) for col, mu in
                        zip(zip(*return_list_set), return_list)]
@@ -374,7 +351,7 @@ if __name__ == "__main__":
     selected_mv_return = mv_return.tolist()[::9]
     selected_return_variance = return_variance[::9]
     selected_episodes_list = episodes_list[::9]
-    file_path = '/Users/pqh/PycharmProjects/Prob-VDN-AC/Simple_Sim/Data/{}_T{}.csv'
+    file_path = './Simple_Sim/Data/{}_T{}.csv'
     file_path = file_path.format(env_name, time_budget)
     add_component_to_csv(file_path, Algorithm, selected_mv_return, selected_return_variance)
     plt.plot(selected_episodes_list, selected_mv_return)
